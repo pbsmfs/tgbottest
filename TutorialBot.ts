@@ -5,7 +5,7 @@ import { Bot, InlineKeyboard } from "grammy";
 let screaming = false;
 
 //Create a new bot
-const bot = new Bot("<YOUR_BOT_TOKEN_HERE>");
+const bot = new Bot("6131721223:AAECH1yVxPpYWxlpb_B232rnMnEzCx5YLE8");
 
 
 
