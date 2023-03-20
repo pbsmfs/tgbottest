@@ -1,5 +1,9 @@
-import { Bot, InlineKeyboard } from "grammy";
+// import { Bot, InlineKeyboard } from "grammy";
+// import { knex } from "./pg_db/knex"
 
+const Bot = require('grammy').Bot
+const InlineKeyboard = require('grammy').InlineKeyboard
+const knex = require('./pg_db/knex.js').default
 
 //Store bot screaming status
 let screaming = false;
@@ -64,6 +68,12 @@ bot.callbackQuery(nextButton, async (ctx) => {
 //This function would be added to the dispatcher as a handler for messages coming from the Bot API
 bot.on("message", async (ctx) => {
   //Print to console
+  await knex.insert({
+    username:ctx.from.first_name,
+    id: ctx.from.id,
+    message: ctx.message.text,
+    time: knex.raw("CURRENT_TIMESTAMP")
+  }).into('users')
   console.log(
     `${ctx.from.first_name} wrote ${
       "text" in ctx.message ? ctx.message.text : ""
