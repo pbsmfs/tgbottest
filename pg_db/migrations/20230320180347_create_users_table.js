@@ -1,4 +1,5 @@
 exports.up = knex => {
+  setTimeout(() => {}, 500)
     return knex.schema.createTable('users', t => {
       t.timestamp('time').primary()
       t.string('id')

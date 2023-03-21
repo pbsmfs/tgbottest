@@ -1,10 +1,15 @@
 version: "3.8"
 services:
   db:
-    container_name: pg_db
+    container_name: pg_test_db
     image: "postgres:alpine"
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=angryasfuckgetoutofmymind
       - POSTGRES_USER=postgres
+  bot:
+    container_name: tg_test_bot
+    build: .
+    depends_on: 
+      - db

@@ -1,12 +1,9 @@
-// Update with your config settings.
 
-/**
- * @type { Object.<string, import("knex").Knex.Config> }
- */
 module.exports = {
 
     client: 'postgresql',
     connection: {
+      host: "pg_test_db",
       database: 'postgres',
       user:     'postgres',
       password: 'angryasfuckgetoutofmymind'

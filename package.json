@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./TutorialBot.js",
+    "start": "concurrently -c=auto npm:start-*",
+    "start-tg": "node ./TutorialBot.js",
+    "start-migration": "knex migrate:latest --knexfile pg_db/knexfile.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "concurrently": "^7.6.0",
     "dotenv": "^16.0.3",
     "grammy": "^1.11.2",
     "knex": "^2.4.2",
