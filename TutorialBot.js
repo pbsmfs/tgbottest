@@ -7,7 +7,7 @@ const knex = require('./pg_db/knex.js').default
 
 dotenv.config();
 
-let screaming = false;
+// let screaming = false;
 let anon = false;
 let asking = false;
 //Create a new bot
@@ -24,23 +24,26 @@ bot.command("whisper", () => {
  });
 
 //Pre-assign menu text
-const firstMenu = "<b>меню окда</b>\n\nмне впадлу будет потом логи чистить...\n\nкогда-нибудь он чему-нибудь научится";
+const mainMenu = "<b>меню окда</b>\n\nмне впадлу будет потом логи чистить...\n\nкогда-нибудь он чему-нибудь научится";
 const secondMenu = "<b>davai davai</b>\n\nнижний текст";
 const askMenu = "<b>Как вы хотите задать вопрос?</b>";
+const postAskMenu = "<b>Ваш вопрос отправлен.</b>"
 
 const anonButton = "Анонимно";
 const pubButton = "Публично";
 const askButton = "Задать вопрос";
+const returnButton = "Меню";
 //Build keyboards
 // const firstMenuMarkup = new InlineKeyboard().text(nextButton, backButton);
  
 // const secondMenuMarkup = new InlineKeyboard().text(backButton, backButton).text(tutorialButton, "https://core.telegram.org/bots/tutorial");
 const mainMenuMarkup = new InlineKeyboard().text(askButton)
 const askMenuMarkup = new InlineKeyboard().text(anonButton).text(pubButton)
+const postAskMarkup = new InlineKeyboard().text(returnButton)
 
 //This handler sends a menu with the inline buttons we pre-assigned above
 bot.command("menu", async (ctx) => {
-    await ctx.reply(firstMenu, {
+    await ctx.reply(mainMenu, {
       parse_mode: "HTML",
       reply_markup: mainMenuMarkup,
     });
@@ -55,25 +58,36 @@ bot.command("start", async (ctx) => {
 
 //This handler processes back button on the menu
 bot.callbackQuery(anonButton, async (ctx) => {
-  asking = true
-  anon = true
-  await ctx.reply("<b>Сообщение будет отправлено анонимно.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"}
-  )
+  if (asking) {
+    anon = true
+    await ctx.reply("<b>Сообщение будет отправлено анонимно.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"}
+    )
+  }
 });
 
 bot.callbackQuery(pubButton, async (ctx) => {
-  asking = true
-  anon = false
-  await ctx.reply("<b>Сообщение будет отправлено с указанием авторства.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"})
+  if (asking) {
+    anon = false
+    await ctx.reply("<b>Сообщение будет отправлено с указанием авторства.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"})
+  }
 });
 
 bot.callbackQuery(askButton, async (ctx) => {
+  asking = true
   await ctx.reply(askMenu, {
     parse_mode: "HTML",
     reply_markup: askMenuMarkup
   })
 })
 
+bot.callbackQuery(returnButton, async (ctx) => {
+  await ctx.reply(mainMenu, {
+    parse_mode: "HTML",
+    reply_markup: mainMenuMarkup
+  })
+  asking = false
+  anon = false
+})
 //This handler processes next button on the menu
 // bot.callbackQuery(nextButton, async (ctx) => {
 //   //Update message content with corresponding menu section
@@ -102,6 +116,8 @@ bot.on("message", async (ctx) => {
       }`,
     );
     
+    // console.log(asking, 21)
+
     if (asking) {
       if (anon === true) {
         await ctx.copyMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
@@ -109,8 +125,14 @@ bot.on("message", async (ctx) => {
       else {
         await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
       }
+      await ctx.reply(postAskMenu, {
+        parse_mode: "HTML",
+        reply_markup: postAskMarkup
+      })
       asking = false
     }
+
+    // console.log(asking, 322)
   
     // if (screaming && ctx.message.text) {
     //   //Scream the message
