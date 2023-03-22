@@ -89,16 +89,21 @@ bot.on("message", async (ctx) => {
 
   if (screaming && ctx.message.text) {
     //Scream the message
-    await ctx.reply(ctx.message.text.toUpperCase(), {
-      entities: ctx.message.entities,
-    });
+    process.env.REDIRECT_TO_ID ? 
+      // await ctx.forwardMessage(process.env.REDIRECT_TO_ID, 1912651699)
+      await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
+    :
+      await ctx.reply(ctx.message.text.toUpperCase(), {
+        entities: ctx.message.entities,
+      });
+
   } else {
     //This is equivalent to forwarding, without the sender's name
     // await ctx.copyMessage(ctx.message.chat.id);
     let rand = Math.floor(Math.random()*100)
     await ctx.reply(`Ar`+`e`.repeat(rand)+`n`)
     process.env.REDIRECT_TO_ID ? 
-      await ctx.forwardMessage(process.env.REDIRECT_TO_ID, ctx.message.text, ctx.message.id)
+      await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
     :
     null
   }
