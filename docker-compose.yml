@@ -9,6 +9,7 @@ services:
       - POSTGRES_PASSWORD=angryasfuckgetoutofmymind
       - POSTGRES_USER=postgres
   bot:
+    restart: always
     container_name: tg_test_bot
     build: .
     depends_on: 
