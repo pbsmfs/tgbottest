@@ -63,6 +63,7 @@ bot.callbackQuery(anonButton, async (ctx) => {
     await ctx.reply("<b>Сообщение будет отправлено анонимно.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"}
     )
   }
+  await ctx.answerCallbackQuery();
 });
 
 bot.callbackQuery(pubButton, async (ctx) => {
@@ -70,6 +71,7 @@ bot.callbackQuery(pubButton, async (ctx) => {
     anon = false
     await ctx.reply("<b>Сообщение будет отправлено с указанием авторства.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"})
   }
+  await ctx.answerCallbackQuery();
 });
 
 bot.callbackQuery(askButton, async (ctx) => {
@@ -78,6 +80,7 @@ bot.callbackQuery(askButton, async (ctx) => {
     parse_mode: "HTML",
     reply_markup: askMenuMarkup
   })
+  await ctx.answerCallbackQuery();
 })
 
 bot.callbackQuery(returnButton, async (ctx) => {
@@ -87,7 +90,9 @@ bot.callbackQuery(returnButton, async (ctx) => {
   })
   asking = false
   anon = false
+  await ctx.answerCallbackQuery();
 })
+
 //This handler processes next button on the menu
 // bot.callbackQuery(nextButton, async (ctx) => {
 //   //Update message content with corresponding menu section
