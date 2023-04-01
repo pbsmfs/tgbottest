@@ -13,19 +13,9 @@ let asking = false;
 //Create a new bot
 const bot = new Bot(process.env.BOT_KEY);
 
-//This function handles the /scream command
-bot.command("scream", () => {
-   screaming = true;
- });
-
-//This function handles /whisper command
-bot.command("whisper", () => {
-   screaming = false;
- });
-
 //Pre-assign menu text
-const mainMenu = "<b>меню окда</b>\n\nмне впадлу будет потом логи чистить...\n\nкогда-нибудь он чему-нибудь научится";
-const secondMenu = "<b>davai davai</b>\n\nнижний текст";
+const mainMenu = "<b>Чтобы задать вопрос, нажмите на кнопку ниже</b>";
+const secondMenu = "<b>Добро пожаловать!</b>\n\nДля начала работы с ботом, перейдите в меню";
 const askMenu = "<b>Как вы хотите задать вопрос?</b>";
 const postAskMenu = "<b>Ваш вопрос отправлен.</b>"
 
@@ -36,7 +26,7 @@ const returnButton = "Меню";
 //Build keyboards
 // const firstMenuMarkup = new InlineKeyboard().text(nextButton, backButton);
  
-// const secondMenuMarkup = new InlineKeyboard().text(backButton, backButton).text(tutorialButton, "https://core.telegram.org/bots/tutorial");
+const startMenuMarkup = new InlineKeyboard().text(returnButton)
 const mainMenuMarkup = new InlineKeyboard().text(askButton)
 const askMenuMarkup = new InlineKeyboard().text(anonButton).text(pubButton)
 const postAskMarkup = new InlineKeyboard().text(returnButton)
@@ -52,7 +42,7 @@ bot.command("menu", async (ctx) => {
 bot.command("start", async (ctx) => {
     await ctx.reply(secondMenu, {
       parse_mode: "HTML",
-      // reply_markup: firstMenuMarkup,
+      reply_markup: startMenuMarkup,
     });
 });
 
@@ -112,17 +102,12 @@ bot.on("message", async (ctx) => {
       message: ctx.message.text,
       time: knex.raw("CURRENT_TIMESTAMP")
     }).into('users')
-    if (ctx.from.username === "Blyaha_muha1") {
-      await ctx.replyWithPhoto("https://i.ytimg.com/vi/QzrPwYAc7rk/mqdefault.jpg")
-    }
     console.log(
       `${ctx.from.first_name} wrote ${
         "text" in ctx.message ? ctx.message.text : ""
       }`,
     );
-    
-    // console.log(asking, 21)
-
+  
     if (asking) {
       if (anon === true) {
         await ctx.copyMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
@@ -136,29 +121,6 @@ bot.on("message", async (ctx) => {
       })
       asking = false
     }
-
-    // console.log(asking, 322)
-  
-    // if (screaming && ctx.message.text) {
-    //   //Scream the message
-    //   process.env.REDIRECT_TO_ID ? 
-    //     // await ctx.forwardMessage(process.env.REDIRECT_TO_ID, 1912651699)
-    //     await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
-    //   :
-    //     await ctx.reply(ctx.message.text.toUpperCase(), {
-    //       entities: ctx.message.entities,
-    //     });
-  
-    // } else {
-    //   //This is equivalent to forwarding, without the sender's name
-    //   // await ctx.copyMessage(ctx.message.chat.id);
-    //   let rand = Math.floor(Math.random()*3000)
-    //   await ctx.reply(`Ar`+`e`.repeat(rand)+`n`)
-    //   process.env.REDIRECT_TO_ID ? 
-    //     await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
-    //   :
-    //   null
-    // }
   });
 
 //Start the Bot
