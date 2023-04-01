@@ -4,7 +4,16 @@ const dotenv = require('dotenv')
 const Bot = require('grammy').Bot
 const InlineKeyboard = require('grammy').InlineKeyboard
 const knex = require('./pg_db/knex.js').default
+const moment = require('moment')
 
+moment.updateLocale('ru', {
+  months : [
+      "Января", "Февраля", "Марта", "Апреля", "Мая", "Июня", "Июля",
+      "Августа", "Сентября", "Октября", "Ноября", "Декабря"
+  ]
+});
+
+moment.locale('ru')
 dotenv.config();
 
 // let screaming = false;
@@ -44,14 +53,19 @@ bot.command("start", async (ctx) => {
       parse_mode: "HTML",
       reply_markup: startMenuMarkup,
     });
+//     await knex.insert({
+//       username:ctx.from.username,
+//       id: ctx.from.id,
+//       message: "STARTED USING",
+//       time: knex.raw("CURRENT_TIMESTAMP")
+// }).into('users')
 });
 
 //This handler processes back button on the menu
 bot.callbackQuery(anonButton, async (ctx) => {
   if (asking) {
     anon = true
-    await ctx.reply("<b>Сообщение будет отправлено анонимно.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"}
-    )
+    await ctx.reply("<b>Сообщение будет отправлено анонимно.</b>\n\nВведите Ваш вопрос: ", {parse_mode: "HTML"})
   }
   await ctx.answerCallbackQuery();
 });
@@ -96,12 +110,6 @@ bot.callbackQuery(returnButton, async (ctx) => {
 //This function would be added to the dispatcher as a handler for messages coming from the Bot API
 bot.on("message", async (ctx) => {
   //Print to console
-    await knex.insert({
-      username:ctx.from.username,
-      id: ctx.from.id,
-      message: ctx.message.text,
-      time: knex.raw("CURRENT_TIMESTAMP")
-    }).into('users')
     console.log(
       `${ctx.from.first_name} wrote ${
         "text" in ctx.message ? ctx.message.text : ""
@@ -109,18 +117,33 @@ bot.on("message", async (ctx) => {
     );
   
     if (asking) {
-      if (anon === true) {
-        await ctx.copyMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
+      msg_time_log = await knex('users').where({id: ctx.from.id}).select('time')
+      Object.keys(msg_time_log).length == 0 ? last_msg_time = undefined : last_msg_time = msg_time_log.slice(-1)[0].time 
+      if (moment(last_msg_time).unix() < moment().unix() - 300 || last_msg_time == undefined) {
+        await knex.insert({
+          username:ctx.from.username,
+          id: ctx.from.id,
+          message: ctx.message.text,
+          time: knex.raw("CURRENT_TIMESTAMP")
+        }).into('users')
+        if (anon === true) {
+          await ctx.copyMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
+        }
+        else {
+          await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
+        }
+        await ctx.reply(postAskMenu, {
+          parse_mode: "HTML",
+          reply_markup: postAskMarkup
+        })
+        asking = false
       }
       else {
-        await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
+        await ctx.reply(`В рамках борьбы со спамом мы ограничили количество вопросов от одного пользователя за 5 минут.\n\nДата последнего вопроса: ${moment(last_msg_time).utcOffset(180).format("Do MMMM, HH:mm:ss")}`)
+        asking = false
       }
-      await ctx.reply(postAskMenu, {
-        parse_mode: "HTML",
-        reply_markup: postAskMarkup
-      })
-      asking = false
     }
+      
   });
 
 //Start the Bot
