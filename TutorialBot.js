@@ -110,41 +110,46 @@ bot.callbackQuery(returnButton, async (ctx) => {
 //This function would be added to the dispatcher as a handler for messages coming from the Bot API
 bot.on("message", async (ctx) => {
   //Print to console
-    console.log(
-      `${ctx.from.first_name} wrote ${
-        "text" in ctx.message ? ctx.message.text : ""
-      }`,
-    );
-  
-    if (asking) {
-      msg_time_log = await knex('users').where({id: ctx.from.id}).select('time')
-      Object.keys(msg_time_log).length == 0 ? last_msg_time = undefined : last_msg_time = msg_time_log.slice(-1)[0].time 
-      if (moment(last_msg_time).unix() < moment().unix() - 300 || last_msg_time == undefined) {
+  console.log(
+    `${ctx.from.first_name} wrote ${
+      "text" in ctx.message ? ctx.message.text : "text"
+    }`,
+  );
+    if ("text" in ctx.message) {
+      if (asking) {
+        msg_time_log = await knex('users').where({id: ctx.from.id}).select('time')
+        Object.keys(msg_time_log).length == 0 ? last_msg_time = undefined : last_msg_time = msg_time_log.slice(-1)[0].time 
+        if (moment(last_msg_time).unix() < moment().unix() - 30 || last_msg_time == undefined) {
+          if (anon === true) {
+            await ctx.copyMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
+          }
+          else {
+            await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
+          }
+          await ctx.reply(postAskMenu, {
+            parse_mode: "HTML",
+            reply_markup: postAskMarkup
+          })
+          asking = false
+        }
+        else {
+          await ctx.reply(`В рамках борьбы со спамом мы ограничили количество вопросов от одного пользователя за 5 минут (30 секунд).\n\nДата последнего вопроса: ${moment(last_msg_time).utcOffset(180).format("Do MMMM, HH:mm:ss")}`)
+          asking = false
+        }
         await knex.insert({
           username:ctx.from.username,
           id: ctx.from.id,
-          message: ctx.message.text,
+          message: ctx.msg.text,
           time: knex.raw("CURRENT_TIMESTAMP")
         }).into('users')
-        if (anon === true) {
-          await ctx.copyMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
-        }
-        else {
-          await ctx.forwardMessage(process.env.REDIRECT_TO_ID, {disable_notification: true})
-        }
-        await ctx.reply(postAskMenu, {
-          parse_mode: "HTML",
-          reply_markup: postAskMarkup
-        })
-        asking = false
-      }
-      else {
-        await ctx.reply(`В рамках борьбы со спамом мы ограничили количество вопросов от одного пользователя за 5 минут.\n\nДата последнего вопроса: ${moment(last_msg_time).utcOffset(180).format("Do MMMM, HH:mm:ss")}`)
-        asking = false
       }
     }
-      
-  });
+    else {
+      await ctx.reply(`Пожалуйста, используйте в своём вопросе только текст. 
+      Можете задать вопрос заново.`)
+    } 
+    } 
+  );
 
 //Start the Bot
 bot.start();
