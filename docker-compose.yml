@@ -8,6 +8,8 @@ services:
     environment:
       - POSTGRES_PASSWORD=angryasfuckgetoutofmymind
       - POSTGRES_USER=postgres
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
   bot:
     restart: always
     container_name: tg_test_bot
